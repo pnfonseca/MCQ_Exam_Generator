@@ -1,0 +1,43 @@
+# --- LaTeX / xelatex build artifacts ---
+# Regenerated every time MCQ_template.tex-based .tex files are compiled;
+# never worth versioning.
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.synctex.gz(busy)
+*.nav
+*.snm
+*.vrb
+*.bbl
+*.blg
+*.idx
+*.ilg
+*.ind
+*.figlist
+*.makefile
+*.fdb_latexmk
+*.xdv
+
+# --- Pipeline intermediates specific to this project ---
+# Body-only LaTeX fragments produced by `pandoc -f markdown -t latex`
+# (step 1 of the md -> tex -> pdf process). Fully reproducible from the
+# approved *_Prova_<variant>.md source plus MCQ_template.tex, so there's
+# no reason to track them.
+*_corpo.tex
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Editor/IDE junk ---
+.vscode/
+.idea/
+*.swp
+*~
