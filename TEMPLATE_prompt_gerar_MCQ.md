@@ -11,6 +11,13 @@ seus campos estiver por preencher, perguntar ao utilizador antes de avançar —
 valores por omissão em pontos que mudam o resultado (âmbito, idioma, linguagem de programação,
 regime do exame, sistema de correção).
 
+**Markdown vs. LaTeX:** todo o processo de geração e revisão — rascunho, conjunto completo,
+variantes baralhadas — é feito em Markdown; é o formato usado para rever e aprovar o conteúdo.
+Só o passo final, depois de uma variante estar aprovada, passa a LaTeX: o PDF de impressão
+nunca é gerado diretamente do Markdown, é sempre montado a partir do template LaTeX partilhado
+(`CLAUDE.md` → "Localização do template LaTeX partilhado") e só depois compilado. Ver Secção 7
+para os passos exatos.
+
 ---
 
 ## 1. Levantamento de fontes
@@ -81,10 +88,18 @@ cegamente no que foi gerado automaticamente.
    sempre o resultado com o mesmo rigor.
 6. Após aprovação do conjunto completo, gerar as variantes com perguntas e alternativas
    baralhadas de forma independente entre versões (número definido no `CLAUDE.md`), e o
-   ficheiro de chave de correção coerente com essas variantes.
-7. Gerar os PDFs finais de impressão a partir de cada variante, usando os comandos do
-   `CLAUDE.md`, e confirmar visualmente pelo menos uma página com código para validar a
-   formatação.
+   ficheiro de chave de correção coerente com essas variantes. Cada variante aprovada fica
+   gravada como Markdown (`..._Prova_<variante>.md`) — este é o único ficheiro de conteúdo
+   editado manualmente ou revisto pelo utilizador; nada a partir daqui volta a ser editado à
+   mão.
+7. Gerar o PDF de impressão de cada variante **a partir do LaTeX, nunca diretamente do
+   Markdown**, seguindo os 3 passos e nomes de ficheiro definidos no `CLAUDE.md`
+   ("Comandos"): (a) converter o `.md` aprovado num fragmento LaTeX com pandoc (sem `-s`); (b)
+   montar o `.tex` final copiando o template partilhado, substituindo as variáveis do
+   cabeçalho pelos valores de "Cabeçalho do exame" no `CLAUDE.md`, e inserindo o fragmento no
+   lugar do marcador `%%% QUESTIONS_PLACEHOLDER %%%`; (c) compilar esse `.tex` com xelatex
+   (duas vezes, para resolver a numeração de páginas). Confirmar visualmente pelo menos uma
+   página com código em cada variante para validar a formatação e o realce de sintaxe.
 
 ## 8. Formato de chave de correção (se aplicável, ex.: ZipGrade)
 Sem linha de cabeçalho. Duas linhas por pergunta e por versão:

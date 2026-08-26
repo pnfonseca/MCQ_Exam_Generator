@@ -41,45 +41,74 @@ autocontenção, fases de geração, formato da chave, comando de referência do
   semelhante antes de inventar um formato — ver metodologia)
 - **Número de versões/variantes finais a gerar:** `<ex.: 2>`
 - **Pasta de destino dos ficheiros gerados:** `<ex.: Exames/>`
-- **Nome do template LaTeX a usar:** `<ex.: PPO_25-26_DZ_TP.tex — criar se não existir>`
+- **Localização do template LaTeX partilhado:** `<caminho relativo, ex.: ../MCQ_template.tex>`
+  (ficheiro único, partilhado entre disciplinas — não copiar nem editar por exame; ver
+  "Cabeçalho do exame" abaixo para os valores que o preenchem)
+
+## Cabeçalho do exame (valores para `MCQ_template.tex`)
+
+Instituição e departamento são fixos dentro de `MCQ_template.tex`
+(`Universidade de Aveiro` / DETI) — só mudar lá diretamente se for usado noutra instituição.
+Os restantes valores do cabeçalho vêm só daqui:
+
+- **Nome da disciplina (cabeçalho, sem código):** `<ex.: Programação por Objectos>`
+- **Tipo de exame:** `<ex.: Exame Final, Teste, Frequência>`
+- **Época/sessão (texto completo do cabeçalho):** `<ex.: Época Especial>`
+- **Componente:** `<ex.: Componente Teórico-Prática>`
+- **Semestre:** `<ex.: 2º Semestre>`
+- **Ano letivo:** `<ex.: 25-26>`
+- **Duração:** `<ex.: 1h00m>`
+- **Rodapé curto:** `<ex.: PpO 25-26>`
 
 ## Convenção de nomes de ficheiros
 
-Derivada apenas dos parâmetros acima — nunca nomes fixos copiados de outra disciplina/sessão:
+Derivada apenas dos parâmetros acima — nunca nomes fixos copiados de outra disciplina/sessão.
+O `.md` é o suporte de trabalho e revisão; o `.tex` e o `.pdf` só existem para a variante já
+aprovada (ver "Comandos" abaixo):
 
 ```
-<pasta de destino>/<prefixo>_<sessão>_MCQ_<N>_Prova_<variante>.md
-<pasta de destino>/<prefixo>_<sessão>_MCQ_<N>_Prova_<variante>.pdf
+<pasta de destino>/<prefixo>_<sessão>_MCQ_<N>_Prova_<variante>.md    (perguntas aprovadas, Markdown)
+<pasta de destino>/<prefixo>_<sessão>_MCQ_<N>_Prova_<variante>.tex   (gerado a partir do .md + MCQ_template.tex)
+<pasta de destino>/<prefixo>_<sessão>_MCQ_<N>_Prova_<variante>.pdf   (compilado a partir do .tex)
 ```
 
 `<variante>` percorre A, B, C, ... até ao "número de versões" definido acima.
 
 ## Comandos
 
-Renderizar uma variante para PDF (xelatex é necessário para acentuação PT-PT):
+O Markdown serve para todo o processo de geração e revisão (rascunho, conjunto completo,
+variantes baralhadas) — só o passo final de impressão passa a LaTeX. Ver a metodologia
+partilhada para o processo completo; aqui ficam só os comandos, com os nomes de ficheiro já
+seguindo o padrão acima.
+
+**1. Converter as perguntas aprovadas de uma variante para um fragmento LaTeX** (sem `-s`, para
+obter só o corpo, sem preâmbulo):
 
 ```bash
 pandoc "<pasta destino>/<prefixo>_<sessão>_MCQ_<N>_Prova_A.md" \
-  -o "<pasta destino>/<prefixo>_<sessão>_MCQ_<N>_Prova_A.pdf" \
-  --pdf-engine=xelatex \
-  -V geometry:a4paper,margin=2.2cm \
-  -V fontsize=11pt \
-  --highlight-style=tango
+  -f markdown -t latex \
+  -o "<pasta destino>/<prefixo>_<sessão>_MCQ_<N>_Prova_A_corpo.tex"
 ```
 
-Percorrer todas as variantes (a lista de letras tem de ter o mesmo comprimento que o "número
-de versões" definido acima):
+**2. Montar o `.tex` final da variante** a partir de `MCQ_template.tex`: copiar o template,
+substituir as variáveis do cabeçalho (Secção "EXAM-SPECIFIC VARIABLES" do template) pelos
+valores desta secção, e substituir a linha `%%% QUESTIONS_PLACEHOLDER %%%` por
+`\input{<prefixo>_<sessão>_MCQ_<N>_Prova_A_corpo.tex}`. Gravar como
+`<prefixo>_<sessão>_MCQ_<N>_Prova_A.tex`. Nenhum placeholder `< >` pode sobrar no ficheiro que
+vai ser compilado.
+
+**3. Compilar o `.tex` com xelatex** (não pandoc — xelatex é necessário para acentuação PT-PT;
+correr duas vezes para resolver `\pageref{LastPage}` no rodapé):
 
 ```bash
-for v in <lista de letras, ex.: A B ou A B C D>; do
-  pandoc "<pasta destino>/<prefixo>_<sessão>_MCQ_<N>_Prova_${v}.md" \
-    -o "<pasta destino>/<prefixo>_<sessão>_MCQ_<N>_Prova_${v}.pdf" \
-    --pdf-engine=xelatex -V geometry:a4paper,margin=2.2cm -V fontsize=11pt \
-    --highlight-style=tango
-done
+xelatex -interaction=nonstopmode "<pasta destino>/<prefixo>_<sessão>_MCQ_<N>_Prova_A.tex"
+xelatex -interaction=nonstopmode "<pasta destino>/<prefixo>_<sessão>_MCQ_<N>_Prova_A.tex"
 ```
 
-Depois de gerar, verificar visualmente pelo menos uma página com um excerto de código.
+Repetir os 3 passos para cada variante (lista de letras com o mesmo comprimento que o "número
+de versões" definido acima). Depois de gerar, verificar visualmente pelo menos uma página com
+um excerto de código — o `MCQ_template.tex` já traz o suporte de realce de sintaxe necessário
+para os blocos de código produzidos pelo pandoc no passo 1.
 
 ## Convenções de código específicas desta disciplina
 
