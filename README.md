@@ -2,15 +2,19 @@
 
 Claude Code–driven pipeline for generating closed/open-book multiple-choice exams: source
 material → draft questions → full question set → shuffled variants → correction key →
-print-ready PDFs.
+print-ready LaTeX. PDF compilation is a separate, local step — see "Compiling to PDF" below.
 
 Originally built for PPO (Programação por Objectos), designed to extend to any course —
 including introductory C/C++ courses — by editing a single per-exam config file.
 
 ## Requirements
 
+**For Claude Code / the generation pipeline:**
 - [Claude Code](https://claude.com/claude-code)
 - [pandoc](https://pandoc.org/) (Markdown → LaTeX conversion)
+
+**For compiling the generated `.tex` to PDF** (done separately, not by Claude Code — see
+below):
 - A working TeX distribution with `xelatex` (needed for PT-PT accented characters)
 
 ## Repository structure
@@ -24,11 +28,12 @@ including introductory C/C++ courses — by editing a single per-exam config fil
 └── <exam-folder>/                 # one folder per course/session, e.g. PPO_DZ_25-26/
     ├── CLAUDE.md                  # all config values for this exam (the only file you edit per exam)
     └── Exames/
-        ├── <prefix>_<session>_MCQ_<N>_Prova_<variant>.md         # approved questions (Markdown)
-        ├── <prefix>_<session>_MCQ_<N>_Prova_<variant>_corpo.tex  # pandoc-converted body (intermediate)
-        ├── <prefix>_<session>_MCQ_<N>_Prova_<variant>.tex        # assembled from MCQ_template.tex
-        ├── <prefix>_<session>_MCQ_<N>_Prova_<variant>.pdf        # final, compiled with xelatex
-        └── zipgrade_keys.csv                                     # correction key
+        ├── <prefix>_<session>_MCQ_<N>_rascunho.md               # ~10-question draft, for approval
+        ├── <prefix>_<session>_MCQ_<N>_Prova_<variant>.md        # approved questions (Markdown)
+        ├── <prefix>_<session>_MCQ_<N>_Prova_<variant>_corpo.tex # pandoc-converted body (intermediate)
+        ├── <prefix>_<session>_MCQ_<N>_Prova_<variant>.tex       # Claude Code's final deliverable
+        ├── <prefix>_<session>_MCQ_<N>_Prova_<variant>.pdf       # produced locally, see below — not by Claude Code
+        └── zipgrade_keys.csv                                    # correction key
 ```
 
 ## Design principle: one fact, one file
@@ -58,19 +63,35 @@ including introductory C/C++ courses — by editing a single per-exam config fil
 ## Pipeline
 
 Markdown is the working medium through drafting, review, the full question set, and shuffled
-variants. Only the final render step switches to LaTeX:
+variants. Only the final step switches to LaTeX — and that's where Claude Code's job ends:
 
-1. **Draft** a small sample (~10 questions) for approval, mixing question styles and topics.
+1. **Draft** a small sample (~10 questions), saved as `..._rascunho.md`, for approval — mixing
+   question styles and topics.
 2. **Generate the full set**, correct answer always on **A** in the working draft, for easy
    human review before shuffling.
 3. **Shuffle into variants** (questions and alternatives independently baralhadas per
    version), together with the matching correction-key rows.
-4. **Render each approved variant to PDF**, never straight from Markdown:
+4. **Assemble each approved variant's final `.tex`**, never straight from Markdown to PDF:
    - `pandoc ... -f markdown -t latex -o ..._corpo.tex` — body-only LaTeX fragment
    - assemble `..._Prova_<variant>.tex` from `MCQ_template.tex`: fill the header variables
      from `CLAUDE.md`, insert the fragment at `%%% QUESTIONS_PLACEHOLDER %%%`
-   - `xelatex ..._Prova_<variant>.tex` (run twice, to resolve the page-count footer)
-5. **Visually check** at least one page with a code snippet per variant.
+   - **stop here** — this `.tex` is Claude Code's final deliverable; it does not compile a PDF
+
+## Compiling to PDF
+
+This step is intentionally separate from the Claude Code pipeline, so that generating exam
+content never requires a full LaTeX distribution in that environment. Once you have a
+variant's `.tex` file, compile it yourself:
+
+```bash
+xelatex -interaction=nonstopmode "<prefix>_<session>_MCQ_<N>_Prova_A.tex"
+xelatex -interaction=nonstopmode "<prefix>_<session>_MCQ_<N>_Prova_A.tex"
+```
+
+Run twice — the first pass resolves cross-references (e.g. the page-count footer via
+`\pageref{LastPage}`), the second pass renders them correctly. Repeat per variant. Afterwards,
+visually check at least one page with a code snippet to confirm the formatting and syntax
+highlighting survived.
 
 ## A note on visibility
 

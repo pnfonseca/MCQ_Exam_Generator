@@ -99,6 +99,17 @@
 \newcommand{\theFooter}{<Rodapé curto -- ex: PpO 25-26>}
 
 %------------------------------------------------------------
+%   VARIANT LETTER (filled per variant, NOT from CLAUDE.md)
+%   Unlike the variables above, this one changes on every
+%   compiled file (A, B, C, ...) -- Claude Code sets it when
+%   assembling each variant's .tex, not from a fixed CLAUDE.md
+%   field. Students must be able to see it, both on the cover
+%   page and on every page footer, so they mark the matching
+%   version on the answer sheet even if pages get separated.
+%------------------------------------------------------------
+\newcommand{\theVariant}{<Variante -- ex: A>}
+
+%------------------------------------------------------------
 %                    HEADER INFORMATION
 %------------------------------------------------------------
 \newcommand{\hdr}[5]{
@@ -133,8 +144,14 @@
 
 \hdr{\theInstitution}{\theDept}{\theCourse}{\theExamType{} - \theSeason{} - \typeOfExam{} - \theSemester{} \theYear}{Duração: \theDuration}
 
+\begin{center}
+\begin{tcolorbox}[colback=black!5, boxrule=1pt, arc=1mm, width=4.5cm, halign=center]
+    {\Large \textbf{Versão \theVariant}}
+\end{tcolorbox}
+\end{center}
+
 \studid{Nº Mec}{Nome}
-\lfoot{\theFooter}
+\lfoot{\theFooter{} -- Versão \theVariant}
 
 %%% QUESTIONS_PLACEHOLDER %%%
 % Replaced by Claude Code with \input{<...>_corpo.tex}, or with

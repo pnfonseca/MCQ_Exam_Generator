@@ -13,9 +13,11 @@ regime do exame, sistema de correção).
 
 **Markdown vs. LaTeX:** todo o processo de geração e revisão — rascunho, conjunto completo,
 variantes baralhadas — é feito em Markdown; é o formato usado para rever e aprovar o conteúdo.
-Só o passo final, depois de uma variante estar aprovada, passa a LaTeX: o PDF de impressão
-nunca é gerado diretamente do Markdown, é sempre montado a partir do template LaTeX partilhado
-(`CLAUDE.md` → "Localização do template LaTeX partilhado") e só depois compilado. Ver Secção 7
+Depois de uma variante estar aprovada, o passo final passa a LaTeX: o `.tex` final de cada
+variante é sempre montado a partir do template LaTeX partilhado (`CLAUDE.md` → "Localização do
+template LaTeX partilhado"), nunca escrito à mão. **Claude Code para neste `.tex` — não gera
+PDF.** A compilação para PDF é feita fora, pelo utilizador (ver README do repositório), para
+não exigir a cadeia LaTeX completa instalada no ambiente onde o Claude Code corre. Ver Secção 7
 para os passos exatos.
 
 ---
@@ -77,7 +79,9 @@ cegamente no que foi gerado automaticamente.
    faltar).
 2. Propor estilos de pergunta adicionais (Secção 3) para aprovação.
 3. Gerar um rascunho pequeno (~10 perguntas), variado em estilos e tópicos, para validar
-   formato/tom antes do conjunto completo.
+   formato/tom antes do conjunto completo. Gravar este rascunho como ficheiro Markdown (nome
+   definido no `CLAUDE.md`, ver "Convenção de nomes de ficheiros") — não apresentar só inline
+   no chat — para o utilizador rever e aprovar antes de continuar.
 4. Só depois de aprovado o rascunho, gerar o conjunto completo, com a resposta correta sempre
    na alternativa A — facilita a revisão humana antes de baralhar.
 5. Verificar tecnicamente cada pergunta antes de apresentar ao utilizador (especialmente as de
@@ -92,14 +96,19 @@ cegamente no que foi gerado automaticamente.
    gravada como Markdown (`..._Prova_<variante>.md`) — este é o único ficheiro de conteúdo
    editado manualmente ou revisto pelo utilizador; nada a partir daqui volta a ser editado à
    mão.
-7. Gerar o PDF de impressão de cada variante **a partir do LaTeX, nunca diretamente do
-   Markdown**, seguindo os 3 passos e nomes de ficheiro definidos no `CLAUDE.md`
+7. Montar o `.tex` final de cada variante **a partir do LaTeX, nunca diretamente do
+   Markdown**, seguindo os 2 passos e nomes de ficheiro definidos no `CLAUDE.md`
    ("Comandos"): (a) converter o `.md` aprovado num fragmento LaTeX com pandoc (sem `-s`); (b)
    montar o `.tex` final copiando o template partilhado, substituindo as variáveis do
-   cabeçalho pelos valores de "Cabeçalho do exame" no `CLAUDE.md`, e inserindo o fragmento no
-   lugar do marcador `%%% QUESTIONS_PLACEHOLDER %%%`; (c) compilar esse `.tex` com xelatex
-   (duas vezes, para resolver a numeração de páginas). Confirmar visualmente pelo menos uma
-   página com código em cada variante para validar a formatação e o realce de sintaxe.
+   cabeçalho pelos valores do mapeamento no `CLAUDE.md` — **incluindo `\theVariant`, que tem
+   de mudar para a letra correta em cada variante (A, B, C, ...), nunca deixado igual entre
+   ficheiros** — e inserindo o fragmento no lugar do marcador `%%% QUESTIONS_PLACEHOLDER %%%`.
+   A letra da variante tem de aparecer de forma visível no documento (o template já mostra
+   `\theVariant` na capa e no rodapé de cada página) para os alunos assinalarem a versão
+   correta na folha de respostas. **Parar aqui — não compilar, não gerar PDF.** A compilação
+   com xelatex é feita fora deste processo, pelo utilizador (comandos documentados no README
+   do repositório), para não exigir a cadeia LaTeX completa instalada no ambiente onde o
+   Claude Code corre.
 
 ## 8. Formato de chave de correção (se aplicável, ex.: ZipGrade)
 Sem linha de cabeçalho. Duas linhas por pergunta e por versão:
