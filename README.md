@@ -1,11 +1,16 @@
-# MCQ Exam Generator
+# MCQ Exam Generator — template repository
 
 Claude Code–driven pipeline for generating closed/open-book multiple-choice exams: source
 material → draft questions → full question set → shuffled variants → correction key →
 print-ready LaTeX. PDF compilation is a separate, local step — see "Compiling to PDF" below.
 
+This is a **template repository**: check it out fresh for every new exam (new course, new
+session, even a re-run of the same exam), fill in one config file, and run. It is not meant to
+accumulate multiple exams inside itself — each checkout is a self-contained working folder for
+one exam.
+
 Originally built for PPO (Programação por Objectos), designed to extend to any course —
-including introductory C/C++ courses — by editing a single per-exam config file.
+including introductory C/C++ courses.
 
 ## Requirements
 
@@ -17,32 +22,39 @@ including introductory C/C++ courses — by editing a single per-exam config fil
 below):
 - A working TeX distribution with `xelatex` (needed for PT-PT accented characters)
 
+Both are provided by this repo's `Dockerfile` — see "Running via Docker" below.
+
 ## Repository structure
 
 ```
 .
-├── TEMPLATE_prompt_gerar_MCQ.md   # shared methodology (edit only to change the process itself)
-├── MCQ_template.tex               # shared LaTeX layout (header, student-ID box, footer)
+├── Dockerfile                       # host-side: builds the container image
+├── build.bash                       # host-side: builds the image
+├── launch.bash                      # host-side: runs the container, mounts workspace/
 ├── .gitignore
-├── README.md
-└── <exam-folder>/                 # one folder per course/session, e.g. PPO_DZ_25-26/
-    ├── CLAUDE.md                  # all config values for this exam (the only file you edit per exam)
-    └── Exames/
-        ├── <prefix>_<session>_MCQ_<N>_rascunho.md               # ~10-question draft, for approval
-        ├── <prefix>_<session>_MCQ_<N>_Prova_<variant>.md        # approved questions (Markdown)
-        ├── <prefix>_<session>_MCQ_<N>_Prova_<variant>_corpo.tex # pandoc-converted body (intermediate)
-        ├── <prefix>_<session>_MCQ_<N>_Prova_<variant>.tex       # Claude Code's final deliverable
-        ├── <prefix>_<session>_MCQ_<N>_Prova_<variant>.pdf       # produced locally, see below — not by Claude Code
-        └── zipgrade_keys.csv                                    # correction key
+├── README.md                        # this file — not seen by Claude Code
+└── workspace/                       # mounted as /workspace in the container
+    ├── CLAUDE.md                    # THE file you edit per exam — fill in every < > field
+    ├── MCQ_template.tex             # shared LaTeX layout — do not edit per exam
+    ├── TEMPLATE_prompt_gerar_MCQ.md # shared methodology — do not edit per exam
+    ├── zipgrade_keys_example.csv    # correction-key format reference
+    └── Exames/                      # created by the pipeline; holds this exam's output:
+        ├── <prefix>_<session>_MCQ_<N>_rascunho.md
+        ├── <prefix>_<session>_MCQ_<N>_Prova_<variant>.md
+        ├── <prefix>_<session>_MCQ_<N>_Prova_<variant>_corpo.tex
+        ├── <prefix>_<session>_MCQ_<N>_Prova_<variant>.tex
+        └── zipgrade_keys.csv
 ```
 
 ## Design principle: one fact, one file
 
 - **Concrete values** (course, session, language, question counts, header text, file paths,
-  code conventions) live *only* in the exam folder's `CLAUDE.md`.
+  code conventions) live *only* in `workspace/CLAUDE.md`.
 - **Process** (how sources are surveyed, question styles, the closed-book self-containment
   rule, distractor quality, the phased draft → full set → variants workflow, the render
-  pipeline) lives *only* in `TEMPLATE_prompt_gerar_MCQ.md`, shared across every exam.
+  pipeline) lives *only* in `workspace/TEMPLATE_prompt_gerar_MCQ.md`, which arrives unchanged
+  with every checkout — you only edit it if you're updating this template repository itself,
+  never while generating a specific exam.
 - Neither file restates the other's content — `TEMPLATE_prompt_gerar_MCQ.md` refers to
   `CLAUDE.md` by field name ("the command defined in *Comando de
   verificação/compilação*...") instead of duplicating values. Nothing needs to be kept in
@@ -50,15 +62,17 @@ below):
 
 ## Setting up a new exam
 
-1. Create a new folder for the course/session.
-2. Copy `CLAUDE.md`'s template fields into a new `CLAUDE.md` in that folder and fill in every
-   bracketed value (course, session, language/compiler, source location, scope, open/closed
-   book, question count, alternatives, variants, destination folder, header text, code
-   conventions for that specific course).
-3. Point its "Ficheiro de metodologia partilhado" field at the repo's
-   `TEMPLATE_prompt_gerar_MCQ.md` (relative path).
-4. Start a Claude Code session inside that folder and ask it to generate the exam —
-   `CLAUDE.md` is loaded automatically, so no config needs to be pasted in.
+1. Check out this repository into your exam's folder (e.g.
+   `Lecturing/Course A/Year 1/Exams/MidTerm/`) — either via "Use this template" on GitHub, or
+   `git clone --depth 1 <repo-url> <exam-folder> && rm -rf <exam-folder>/.git` if you don't
+   want the checkout itself under version control.
+2. Open `workspace/CLAUDE.md` and fill in every bracketed `< >` field (course, session,
+   language/compiler, source location, scope, open/closed book, question count, alternatives,
+   variants, destination folder, header text, code conventions for this specific course).
+3. Build and launch the container (`./build.bash` if the image doesn't exist yet, then
+   `./launch.bash`) — it mounts `workspace/` to `/workspace` and starts there.
+4. Start Claude Code and ask it to generate the exam — `CLAUDE.md` is loaded automatically, so
+   no config needs to be pasted in.
 
 ## Pipeline
 
@@ -93,8 +107,15 @@ Run twice — the first pass resolves cross-references (e.g. the page-count foot
 visually check at least one page with a code snippet to confirm the formatting and syntax
 highlighting survived.
 
+## Running via Docker
+
+`Dockerfile`, `build.bash`, and `launch.bash` live at the repo root, outside `workspace/`, so
+rebuilding the image never touches exam content. `launch.bash` bind-mounts `workspace/` to
+`/workspace` inside the container and starts the container there — that's also where
+`CLAUDE.md` needs to sit, since Claude Code auto-loads it from the working directory.
+
 ## A note on visibility
 
-Exam PDFs and correction keys contain answers. If this repository (or any fork/mirror of it)
-is public, keep exam content — anything under an exam folder's output directory — in a
-private repository or a separate private remote instead.
+Exam PDFs and correction keys contain answers. If a checked-out exam folder (or any
+fork/mirror of it) ends up in a public repository, keep the exam content — `workspace/Exames/`
+— in a private repository instead.

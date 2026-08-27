@@ -1,24 +1,20 @@
-# CLAUDE.md — modelo para pasta de exame/teste MCQ
+# CLAUDE.md — exame/teste MCQ
 
-> **Como usar este modelo:** copiar para `CLAUDE.md` na pasta do novo exame e preencher todos
-> os campos entre `< >`. Este é o **único** ficheiro onde os parâmetros deste exame são
-> definidos — não copiar estes valores para mais nenhum ficheiro. A metodologia (o "como
-> fazer") vive só em `<caminho para TEMPLATE_prompt_gerar_MCQ.md>`, partilhada entre
-> disciplinas; este `CLAUDE.md` só contém o "com que valores" e as regras específicas desta
-> disciplina. Apagar este aviso depois de preenchido.
+> Este ficheiro vem do repositório-modelo com os campos por preencher. Depois de um `git
+> checkout`/"Use this template" para uma nova pasta de exame, preencher todos os campos entre
+> `< >` com os dados deste exame específico — é o **único** ficheiro onde esses valores são
+> definidos, não copiar para mais nenhum ficheiro. A metodologia (o "como fazer") vive em
+> `TEMPLATE_prompt_gerar_MCQ.md`, na mesma pasta; este `CLAUDE.md` só contém o "com que
+> valores" e as regras específicas desta disciplina/sessão.
 >
 > Ao iniciar uma conversa nesta pasta, não é preciso colar nada: o Claude Code lê este
 > ficheiro automaticamente. Basta pedir, por exemplo, "gera o conjunto de MCQ". Se algum campo
 > abaixo ficar por preencher, a instrução é perguntar antes de avançar — nunca assumir valores
 > por omissão em pontos que mudam o resultado.
 
-## Ficheiro de metodologia partilhado
-
-- **Localização:** `<caminho relativo, ex.: ../TEMPLATE_prompt_gerar_MCQ.md>`
-
-Ler esse ficheiro para todo o processo (levantamento de fontes, estilos de pergunta, regras de
-autocontenção, fases de geração, formato da chave, comando de referência do pandoc). Este
-`CLAUDE.md` não repete nada disso — só os valores concretos abaixo.
+Ler `TEMPLATE_prompt_gerar_MCQ.md` (mesma pasta) para todo o processo (levantamento de fontes,
+estilos de pergunta, regras de autocontenção, fases de geração, formato da chave, comandos de
+referência). Este `CLAUDE.md` não repete nada disso — só os valores concretos abaixo.
 
 ## Parâmetros deste exame
 
@@ -43,12 +39,11 @@ autocontenção, fases de geração, formato da chave, comando de referência do
 - **Regime do exame:** `<aberto|fechado>`
 - **Número total de perguntas:** `<N>`
 - **Número de alternativas por pergunta:** `<ex.: 4>`
-- **Sistema de correção:** `<ex.: ZipGrade>` (procurar por `find . -iname "*keys*.csv"` ou
-  semelhante antes de inventar um formato — ver metodologia)
+- **Sistema de correção:** `<ex.: ZipGrade>` — se for ZipGrade, o ficheiro-exemplo já vem
+  nesta pasta (`zipgrade_keys_example.csv`); para outro sistema, procurar por
+  `find . -iname "*keys*.csv"` ou semelhante antes de inventar um formato (ver metodologia)
 - **Número de versões/variantes finais a gerar:** `<ex.: 2>`
 - **Pasta de destino dos ficheiros gerados:** `<ex.: Exames/>`
-- **Localização do template LaTeX partilhado:** `<caminho relativo, ex.: ../MCQ_template.tex>`
-  (ficheiro único, partilhado entre disciplinas — não copiar nem editar por exame)
 
 ## Mapeamento para o cabeçalho (`MCQ_template.tex`)
 

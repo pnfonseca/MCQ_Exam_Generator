@@ -1,10 +1,11 @@
 # Prompt-modelo: gerar um conjunto de MCQ a partir de materiais de uma UC
 
-Este ficheiro é a metodologia partilhada entre disciplinas — **não contém nenhum parâmetro de
-exame concreto**. Os valores concretos (disciplina, sessão, linguagem, nº de perguntas, nº de
-variantes, pasta de destino, etc.) vivem exclusivamente no `CLAUDE.md` da pasta do exame que
-está a ser gerado. Este ficheiro não deve ser copiado nem editado por exame — é o mesmo para
-todas as disciplinas; só se edita quando o *processo em si* muda.
+Este ficheiro é a metodologia partilhada do processo de geração de MCQ — **não contém nenhum
+parâmetro de exame concreto**. Os valores concretos (disciplina, sessão, linguagem, nº de
+perguntas, nº de variantes, pasta de destino, etc.) vivem exclusivamente no `CLAUDE.md` desta
+mesma pasta. Chega em branco (sem alterações) a cada novo exame, a partir do repositório-modelo
+— não editar durante a geração de um exame; só se edita para atualizar o processo em si no
+repositório-modelo.
 
 Antes de gerar ou editar qualquer pergunta: **ler o `CLAUDE.md` da pasta atual**. Se algum dos
 seus campos estiver por preencher, perguntar ao utilizador antes de avançar — não assumir
@@ -14,11 +15,10 @@ regime do exame, sistema de correção).
 **Markdown vs. LaTeX:** todo o processo de geração e revisão — rascunho, conjunto completo,
 variantes baralhadas — é feito em Markdown; é o formato usado para rever e aprovar o conteúdo.
 Depois de uma variante estar aprovada, o passo final passa a LaTeX: o `.tex` final de cada
-variante é sempre montado a partir do template LaTeX partilhado (`CLAUDE.md` → "Localização do
-template LaTeX partilhado"), nunca escrito à mão. **Claude Code para neste `.tex` — não gera
-PDF.** A compilação para PDF é feita fora, pelo utilizador (ver README do repositório), para
-não exigir a cadeia LaTeX completa instalada no ambiente onde o Claude Code corre. Ver Secção 7
-para os passos exatos.
+variante é sempre montado a partir de `MCQ_template.tex` (mesma pasta), nunca escrito à mão.
+**Claude Code para neste `.tex` — não gera PDF.** A compilação para PDF é feita fora, pelo
+utilizador (ver README do repositório), para não exigir a cadeia LaTeX completa instalada no
+ambiente onde o Claude Code corre. Ver Secção 7 para os passos exatos.
 
 ---
 
@@ -116,9 +116,10 @@ Sem linha de cabeçalho. Duas linhas por pergunta e por versão:
 <versão>,<nº pergunta>,<letra correta>,<pontos por acerto>,
 <versão>,<nº pergunta>,[a&i],<pontos por erro (negativo)>,
 ```
-Confirmar sempre o formato exato com um ficheiro-exemplo já existente no repositório
-(`find . -iname "*keys*.csv"` ou semelhante) antes de o gerar de raiz — o formato pode variar
-por sistema de correção ou por disciplina.
+Confirmar sempre o formato exato antes de gerar de raiz: se o sistema de correção for ZipGrade,
+usar `zipgrade_keys_example.csv` (mesma pasta) como referência; para outro sistema, procurar
+por `find . -iname "*keys*.csv"` ou semelhante — o formato pode variar por sistema de correção
+ou por disciplina.
 
 Se não houver outra indicação, fazer para uma pontuação total de 20 valores, com peso igual
 para todas as perguntas. As respostas erradas descontam um valor dado por C/(N-1), em que C é
