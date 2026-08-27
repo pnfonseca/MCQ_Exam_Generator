@@ -20,9 +20,13 @@ including introductory C/C++ courses.
 
 **For compiling the generated `.tex` to PDF** (done separately, not by Claude Code — see
 below):
-- A working TeX distribution with `xelatex` (needed for PT-PT accented characters)
+- A working TeX distribution with a Unicode-native engine — `lualatex` or `xelatex` (needed
+  for PT-PT accented characters) — and `latexmk` (most TeX distributions, e.g. TeX Live,
+  include both by default)
 
-Both are provided by this repo's `Dockerfile` — see "Running via Docker" below.
+This repo's `Dockerfile` provides Claude Code and `pandoc`; it does not install a TeX
+distribution, since PDF compilation happens outside the container (see "Compiling to PDF"),
+deliberately keeping the container image lighter.
 
 ## Repository structure
 
@@ -95,17 +99,28 @@ variants. Only the final step switches to LaTeX — and that's where Claude Code
 
 This step is intentionally separate from the Claude Code pipeline, so that generating exam
 content never requires a full LaTeX distribution in that environment. Once you have a
-variant's `.tex` file, compile it yourself:
+variant's `.tex` file, compile it with `latexmk`:
 
 ```bash
-xelatex -interaction=nonstopmode "<prefix>_<session>_MCQ_<N>_Prova_A.tex"
-xelatex -interaction=nonstopmode "<prefix>_<session>_MCQ_<N>_Prova_A.tex"
+latexmk "<prefix>_<session>_MCQ_<N>_Prova_A.tex"
 ```
 
-Run twice — the first pass resolves cross-references (e.g. the page-count footer via
-`\pageref{LastPage}`), the second pass renders them correctly. Repeat per variant. Afterwards,
-visually check at least one page with a code snippet to confirm the formatting and syntax
-highlighting survived.
+`latexmk` figures out how many passes are needed on its own (e.g. resolving the page-count
+footer via `\pageref{LastPage}`) instead of you having to remember to run the engine twice.
+Which engine it invokes depends on your local `latexmk`/TeX setup (e.g. `lualatex` or
+`xelatex` — both handle the PT-PT accented characters natively); pass `-lualatex` or
+`-xelatex` explicitly, or set a default via `.latexmkrc`, if you need a specific one.
+
+Repeat per variant. Afterwards, visually check at least one page with a code snippet to
+confirm the formatting and syntax highlighting survived, and that the footer shows the
+correct "Página 1 de N".
+
+To clean up the auxiliary files `latexmk` leaves behind (`.aux`, `.log`, `.fls`, etc. — already
+covered by `.gitignore`, but useful to tidy a working folder):
+
+```bash
+latexmk -c "<prefix>_<session>_MCQ_<N>_Prova_A.tex"
+```
 
 ## Running via Docker
 
