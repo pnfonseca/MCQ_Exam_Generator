@@ -1,7 +1,9 @@
 FROM ubuntu:26.04
 
+# Build-time only; doesn't leak into the running container
 ARG DEBIAN_FRONTEND=noninteractive
 
+# Union of both package sets; clean the apt cache to keep the image small
 RUN apt-get update && \
     apt-get install -y \
         curl \
@@ -12,37 +14,40 @@ RUN apt-get update && \
         less \
         nano \
         vim \
-        poppler-utils \
         build-essential \
+        poppler-utils \
         pandoc \
-        locales
+        locales && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Full UTF-8 locale (not just C.UTF-8 -- glibc's C.UTF-8 decodes UTF-8
-# correctly but its ctype tables only mark plain ASCII as printable, so
-# accented PT-PT filenames/content still get octal-escaped by ls, etc.)
-RUN locale-gen pt_PT.UTF-8 && \
-    update-locale LANG=pt_PT.UTF-8
-ENV LANG=pt_PT.UTF-8
-ENV LC_ALL=pt_PT.UTF-8
+# Full UTF-8 locale (C.UTF-8 only marks ASCII as printable, so accented
+# PT-PT filenames/content get octal-escaped by ls and friends)
+ARG LOCALE=pt_PT.UTF-8
+RUN locale-gen ${LOCALE} && update-locale LANG=${LOCALE}
+ENV LANG=${LOCALE} \
+    LC_ALL=${LOCALE}
 
+# Match the 'ubuntu' user to the host UID/GID so files in mounted folders
+# are owned by the host user
 ARG USER_UID=1000
 ARG USER_GID=1000
-
-# Adjust the pre-existing 'ubuntu' user/group to match host UID/GID if needed
-RUN if [ "$USER_GID" != "1000" ]; then groupmod --gid $USER_GID ubuntu; fi && \
-    if [ "$USER_UID" != "1000" ]; then usermod --uid $USER_UID ubuntu; fi && \
-    chown -R $USER_UID:$USER_GID /home/ubuntu
+RUN if [ "$USER_GID" != "1000" ]; then groupmod --gid "$USER_GID" ubuntu; fi && \
+    if [ "$USER_UID" != "1000" ]; then usermod --uid "$USER_UID" ubuntu; fi && \
+    mkdir -p /workspace /Sources && \
+    chown -R "$USER_UID:$USER_GID" /home/ubuntu /workspace
 
 USER ubuntu
+ENV HOME=/home/ubuntu
 WORKDIR /home/ubuntu
 
-
-
-# Install Claude Code
+# Install Claude Code (change CLAUDE_CACHEBUST to force a fresh install)
+ARG CLAUDE_CACHEBUST=0
 RUN curl -fsSL https://claude.ai/install.sh | bash
+ENV PATH="${HOME}/.local/bin:${PATH}"
 
-ENV PATH="/home/ubuntu/.local/bin:${PATH}"
+# Fail the build if the install didn't work
+RUN claude --version
 
 WORKDIR /workspace
-
 CMD ["/bin/bash"]

@@ -128,6 +128,10 @@ latexmk -c "<prefix>_<session>_MCQ_<N>_Prova_A.tex"
 rebuilding the image never touches exam content. `launch.bash` bind-mounts `workspace/` to
 `/workspace` inside the container and starts the container there — that's also where
 `CLAUDE.md` needs to sit, since Claude Code auto-loads it from the working directory.
+It also mounts `Sources/` (next to `launch.bash`) read-only at `/Sources`, for reference
+material such as lecture slides or past exams. `Sources/` is typically a symlink to wherever
+those documents live on disk (`ln -s ~/path/to/course-docs Sources`) and is git-ignored.
+Both folders can be overridden: `./launch.bash [work_dir] [sources_dir]`.
 
 ## A note on visibility
 

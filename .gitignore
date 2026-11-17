@@ -41,3 +41,7 @@ desktop.ini
 .idea/
 *.swp
 *~
+
+# --- Reference material mounted read-only at /Sources by launch.bash ---
+# Usually a symlink to course documents elsewhere on disk; never version it.
+/Sources
